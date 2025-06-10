@@ -65,7 +65,7 @@ const CVTemplate1 = forwardRef(({ data = {}, color = 'steelblue' }, ref) => {
   ref={ref}
   className="w-full flex flex-col lg:flex-row text-gray-900"
   style={{
-    height: '1830px',
+    height: '1810px',
     backgroundColor: '#f3f4f6',
   }}
 >
