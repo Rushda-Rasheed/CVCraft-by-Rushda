@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { toast } from 'react-hot-toast';
 import jsPDF from 'jspdf';
@@ -11,9 +12,18 @@ export default function ExportButton({ cvRef }) {
     }
 
     try {
-      const canvas = await html2canvas(cvRef.current, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'pt', 'a4');
+      // Lower scale and enable CORS
+      const canvas = await html2canvas(cvRef.current, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        backgroundColor: '#ffffff', // ensure white background
+      });
+
+      // Convert to JPEG for smaller file size
+      const imgData = canvas.toDataURL('image/jpeg', 0.6);
+      const pdf = new jsPDF('p', 'pt', 'a4', true); // 'true' enables compression
 
       const pageWidth = 595.28;
       const pageHeight = 841.89;
@@ -22,22 +32,16 @@ export default function ExportButton({ cvRef }) {
       const imgWidth = pageWidth;
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
+      let heightLeft = imgHeight;
       let position = 0;
 
-      // If content height > one page, add pages as needed
-      if (imgHeight <= pageHeight) {
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      } else {
-        let remainingHeight = imgHeight;
-
-        while (remainingHeight > 0) {
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          remainingHeight -= pageHeight;
-          position -= pageHeight;
-
-          if (remainingHeight > 0) {
-            pdf.addPage();
-          }
+      // Add image content with pagination
+      while (heightLeft > 0) {
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        position -= pageHeight;
+        if (heightLeft > 0) {
+          pdf.addPage();
         }
       }
 
@@ -58,5 +62,4 @@ export default function ExportButton({ cvRef }) {
     </button>
   );
 }
-
 
